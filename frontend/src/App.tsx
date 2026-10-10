@@ -94,14 +94,14 @@ export default function App() {
       description: 'Extract raw text, numerical values, and reference ranges from medical PDF/Image lab reports.',
       icon: FileText,
       color: 'from-cyan-500 to-teal-500',
-      tag: 'Phase 4 (Active)'
+      tag: 'Phase 4 (Completed)'
     },
     {
       title: 'AI Report Explanation',
-      description: 'Jargon-free medical report summarization with strict safety disclaimers and parameter breakdown.',
+      description: 'Jargon-free medical report summarization with strict safety disclaimers, biomarker analysis, and Q&A.',
       icon: Brain,
       color: 'from-teal-500 to-emerald-500',
-      tag: 'Phase 5'
+      tag: 'Phase 5 (Completed)'
     },
     {
       title: 'Report-Grounded RAG Q&A',
@@ -133,7 +133,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 4
+                Phase 5
               </span>
             </div>
           </div>

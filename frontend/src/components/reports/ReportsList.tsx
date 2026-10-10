@@ -9,10 +9,12 @@ import {
   Layers,
   CheckCircle2,
   AlertTriangle,
-  Brain
+  Brain,
+  Sparkles
 } from 'lucide-react'
 import { reportsService, type ReportItem } from '../../services/reports'
 import { OCRResultModal } from '../ocr/OCRResultModal'
+import { AIExplanationModal } from '../ai/AIExplanationModal'
 
 interface ReportsListProps {
   refreshTrigger: number
@@ -27,8 +29,9 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   
-  // OCR Modal state
+  // OCR & AI Modal state
   const [selectedReportForOCR, setSelectedReportForOCR] = useState<ReportItem | null>(null)
+  const [selectedReportForAI, setSelectedReportForAI] = useState<ReportItem | null>(null)
 
   const loadReports = async () => {
     setLoading(true)
@@ -205,6 +208,13 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
                   </td>
                   <td className="py-3 text-right pr-2 space-x-1">
                     <button
+                      onClick={() => setSelectedReportForAI(report)}
+                      className="p-1.5 rounded-lg border border-indigo-800/60 bg-indigo-950/40 text-indigo-400 hover:bg-indigo-900/60 transition"
+                      title="AI Clinical Summary & Insights"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </button>
+                    <button
                       onClick={() => setSelectedReportForOCR(report)}
                       className="p-1.5 rounded-lg border border-cyan-800/60 bg-cyan-950/40 text-cyan-400 hover:bg-cyan-900/60 transition"
                       title="View OCR Extracted Findings & Text"
@@ -244,6 +254,17 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
           onStatusUpdated={loadReports}
         />
       )}
+
+      {/* AI Explanation Modal */}
+      {selectedReportForAI && (
+        <AIExplanationModal
+          isOpen={!!selectedReportForAI}
+          onClose={() => setSelectedReportForAI(null)}
+          reportId={selectedReportForAI.report_id}
+          reportFileName={selectedReportForAI.file_name}
+        />
+      )}
     </div>
   )
 }
+
