@@ -87,14 +87,14 @@ export default function App() {
       description: 'Secure multi-tenant file upload, magic byte validation, and authoritative source preservation.',
       icon: UploadCloud,
       color: 'from-blue-500 to-cyan-500',
-      tag: 'Phase 3 (Active)'
+      tag: 'Phase 3 (Completed)'
     },
     {
       title: 'OCR & Document Processing',
       description: 'Extract raw text, numerical values, and reference ranges from medical PDF/Image lab reports.',
       icon: FileText,
       color: 'from-cyan-500 to-teal-500',
-      tag: 'Phase 4'
+      tag: 'Phase 4 (Active)'
     },
     {
       title: 'AI Report Explanation',
@@ -133,7 +133,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 3
+                Phase 4
               </span>
             </div>
           </div>
@@ -218,33 +218,33 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto px-6 py-10 flex flex-col justify-start w-full">
         {/* Banner Section */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-            <UploadCloud className="h-3.5 w-3.5" />
-            <span>Phase 3 — Medical Report Ingestion &amp; Storage Engine</span>
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
+            <Brain className="h-3.5 w-3.5" />
+            <span>Phase 4 — OCR Pipeline &amp; Clinical Text Extraction Engine</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Clinical Lab Reports &amp; <br />
+            Clinical OCR Extraction &amp; <br />
             <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
-              Secure Document Management
+              Laboratory Parameter Parsing
             </span>
           </h1>
 
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Multi-tenant document upload pipeline with strict magic byte validation, 
-            authoritative source preservation, and BOLA IDOR isolation.
+            Multi-tier document OCR pipeline with direct vector PDF parsing, structured clinical parameter 
+            extraction (reference ranges &amp; flags), and semantic RAG chunking.
           </p>
 
           {/* Quick Action Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> MIME Magic Byte Validation
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Tier-1 Native PDF Vector Extraction
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Isolated Multi-Tenant Storage
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Clinical Lab Findings &amp; Flags
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Authoritative Source Invariant
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Semantic RAG Chunking Ready
             </span>
           </div>
         </div>

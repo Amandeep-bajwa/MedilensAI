@@ -8,9 +8,11 @@ import {
   Clock,
   Layers,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Brain
 } from 'lucide-react'
 import { reportsService, type ReportItem } from '../../services/reports'
+import { OCRResultModal } from '../ocr/OCRResultModal'
 
 interface ReportsListProps {
   refreshTrigger: number
@@ -24,6 +26,9 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
   const [search, setSearch] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  
+  // OCR Modal state
+  const [selectedReportForOCR, setSelectedReportForOCR] = useState<ReportItem | null>(null)
 
   const loadReports = async () => {
     setLoading(true)
@@ -132,7 +137,7 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
         </div>
       </div>
 
-      {/* Reports Table / Card List */}
+      {/* Reports Table */}
       {loading ? (
         <div className="py-12 text-center text-xs text-slate-500">
           <RefreshCw className="mx-auto h-6 w-6 animate-spin text-cyan-500 mb-2" />
@@ -200,6 +205,13 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
                   </td>
                   <td className="py-3 text-right pr-2 space-x-1">
                     <button
+                      onClick={() => setSelectedReportForOCR(report)}
+                      className="p-1.5 rounded-lg border border-cyan-800/60 bg-cyan-950/40 text-cyan-400 hover:bg-cyan-900/60 transition"
+                      title="View OCR Extracted Findings & Text"
+                    >
+                      <Brain className="h-3.5 w-3.5" />
+                    </button>
+                    <button
                       onClick={() => handleDownload(report)}
                       className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-cyan-400 hover:border-cyan-800 transition"
                       title="Download Original Document"
@@ -220,6 +232,17 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* OCR Result Modal */}
+      {selectedReportForOCR && (
+        <OCRResultModal
+          isOpen={!!selectedReportForOCR}
+          onClose={() => setSelectedReportForOCR(null)}
+          reportId={selectedReportForOCR.report_id}
+          reportFileName={selectedReportForOCR.file_name}
+          onStatusUpdated={loadReports}
+        />
       )}
     </div>
   )
