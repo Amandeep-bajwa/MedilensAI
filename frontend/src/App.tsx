@@ -105,10 +105,10 @@ export default function App() {
     },
     {
       title: 'Report-Grounded RAG Q&A',
-      description: 'Vector-retrieval grounded Q&A with citations strictly bound to the patient\'s uploaded report.',
+      description: 'Dense semantic vector-retrieval grounded Q&A with citations strictly bound to the patient\'s uploaded report.',
       icon: Sparkles,
       color: 'from-indigo-500 to-purple-500',
-      tag: 'Phase 6'
+      tag: 'Phase 6 (Completed)'
     },
     {
       title: 'Symptom Assistant & Health Tracking',
@@ -133,7 +133,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 5
+                Phase 6
               </span>
             </div>
           </div>

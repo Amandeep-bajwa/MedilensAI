@@ -10,11 +10,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   Brain,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react'
 import { reportsService, type ReportItem } from '../../services/reports'
 import { OCRResultModal } from '../ocr/OCRResultModal'
 import { AIExplanationModal } from '../ai/AIExplanationModal'
+import { RAGQueryModal } from '../rag/RAGQueryModal'
 
 interface ReportsListProps {
   refreshTrigger: number
@@ -29,9 +31,11 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   
-  // OCR & AI Modal state
+  // OCR, AI & RAG Modal state
   const [selectedReportForOCR, setSelectedReportForOCR] = useState<ReportItem | null>(null)
   const [selectedReportForAI, setSelectedReportForAI] = useState<ReportItem | null>(null)
+  const [selectedReportForRAG, setSelectedReportForRAG] = useState<ReportItem | null>(null)
+
 
   const loadReports = async () => {
     setLoading(true)
@@ -208,6 +212,13 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
                   </td>
                   <td className="py-3 text-right pr-2 space-x-1">
                     <button
+                      onClick={() => setSelectedReportForRAG(report)}
+                      className="p-1.5 rounded-lg border border-purple-800/60 bg-purple-950/40 text-purple-400 hover:bg-purple-900/60 transition"
+                      title="Report-Grounded RAG Q&A Assistant"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                    </button>
+                    <button
                       onClick={() => setSelectedReportForAI(report)}
                       className="p-1.5 rounded-lg border border-indigo-800/60 bg-indigo-950/40 text-indigo-400 hover:bg-indigo-900/60 transition"
                       title="AI Clinical Summary & Insights"
@@ -264,7 +275,18 @@ export const ReportsList: React.FC<ReportsListProps> = ({ refreshTrigger, onRepo
           reportFileName={selectedReportForAI.file_name}
         />
       )}
+
+      {/* RAG Query Modal */}
+      {selectedReportForRAG && (
+        <RAGQueryModal
+          isOpen={!!selectedReportForRAG}
+          onClose={() => setSelectedReportForRAG(null)}
+          reportId={selectedReportForRAG.report_id}
+          reportFileName={selectedReportForRAG.file_name}
+        />
+      )}
     </div>
   )
 }
+
 
