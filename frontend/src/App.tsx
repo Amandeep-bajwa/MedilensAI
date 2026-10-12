@@ -12,7 +12,8 @@ import {
   User,
   LogIn,
   UploadCloud,
-  FolderOpen
+  FolderOpen,
+  Clock
 } from 'lucide-react'
 import axios from 'axios'
 import { authService, type UserSummary } from './services/auth'
@@ -20,6 +21,7 @@ import { AuthModal } from './components/auth/AuthModal'
 import { ProfileModal } from './components/auth/ProfileModal'
 import { ReportUploadCard } from './components/reports/ReportUploadCard'
 import { ReportsList } from './components/reports/ReportsList'
+import { SymptomAssistantModal } from './components/symptoms/SymptomAssistantModal'
 
 interface HealthStatus {
   status: string
@@ -36,6 +38,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<UserSummary | null>(null)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false)
+  const [isSymptomModalOpen, setIsSymptomModalOpen] = useState<boolean>(false)
 
   // Reports state
   const [reportsRefresh, setReportsRefresh] = useState<number>(0)
@@ -111,11 +114,18 @@ export default function App() {
       tag: 'Phase 6 (Completed)'
     },
     {
-      title: 'Symptom Assistant & Health Tracking',
-      description: 'Educational symptom guidance, medication schedules, and doctor appointment management.',
+      title: 'Symptom Assistant & Clinical Triage',
+      description: 'Educational symptom guidance, emergency red-flag screening, and specialist referrals.',
       icon: Stethoscope,
       color: 'from-amber-500 to-rose-500',
-      tag: 'Phase 7 & 8'
+      tag: 'Phase 7 (Completed)'
+    },
+    {
+      title: 'Medication & Appointment Management',
+      description: 'Patient prescription tracking, dosage schedules, and doctor appointment workflows.',
+      icon: Clock,
+      color: 'from-blue-500 to-indigo-500',
+      tag: 'Phase 8 (Next)'
     }
   ]
 
@@ -133,7 +143,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 6
+                Phase 7
               </span>
             </div>
           </div>
@@ -182,6 +192,18 @@ export default function App() {
                 </span>
               )}
             </div>
+
+            {/* Symptom Triage Action Button */}
+            {currentUser && (
+              <button
+                onClick={() => setIsSymptomModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-amber-800/60 bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 transition text-xs font-semibold cursor-pointer"
+                title="Symptom Assistant & Clinical Triage"
+              >
+                <Stethoscope className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Symptom Triage</span>
+              </button>
+            )}
 
             {/* Auth Button or User Badge */}
             {currentUser ? (
@@ -358,6 +380,12 @@ export default function App() {
           onUserUpdated={(updated) => setCurrentUser(updated)}
         />
       )}
+
+      {/* Symptom Assistant Modal */}
+      <SymptomAssistantModal
+        isOpen={isSymptomModalOpen}
+        onClose={() => setIsSymptomModalOpen(false)}
+      />
     </div>
   )
 }
