@@ -22,6 +22,7 @@ import { ProfileModal } from './components/auth/ProfileModal'
 import { ReportUploadCard } from './components/reports/ReportUploadCard'
 import { ReportsList } from './components/reports/ReportsList'
 import { SymptomAssistantModal } from './components/symptoms/SymptomAssistantModal'
+import { HealthTrackerModal } from './components/health/HealthTrackerModal'
 
 interface HealthStatus {
   status: string
@@ -39,6 +40,7 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false)
   const [isSymptomModalOpen, setIsSymptomModalOpen] = useState<boolean>(false)
+  const [isHealthModalOpen, setIsHealthModalOpen] = useState<boolean>(false)
 
   // Reports state
   const [reportsRefresh, setReportsRefresh] = useState<number>(0)
@@ -125,7 +127,14 @@ export default function App() {
       description: 'Patient prescription tracking, dosage schedules, and doctor appointment workflows.',
       icon: Clock,
       color: 'from-blue-500 to-indigo-500',
-      tag: 'Phase 8 (Next)'
+      tag: 'Phase 8 (Completed)'
+    },
+    {
+      title: 'Analytics, Health Trends & Multilingual Expansion',
+      description: 'Longitudinal biomarker trajectory charts, localized patient translations, and exportable summaries.',
+      icon: Activity,
+      color: 'from-emerald-500 to-cyan-500',
+      tag: 'Phase 9 (Next)'
     }
   ]
 
@@ -143,7 +152,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 7
+                Phase 8
               </span>
             </div>
           </div>
@@ -192,6 +201,18 @@ export default function App() {
                 </span>
               )}
             </div>
+
+            {/* Health Tracker Regimens Button */}
+            {currentUser && (
+              <button
+                onClick={() => setIsHealthModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-blue-800/60 bg-blue-950/40 text-blue-300 hover:bg-blue-900/60 transition text-xs font-semibold cursor-pointer"
+                title="Medications & Appointments Tracker"
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Health Tracker</span>
+              </button>
+            )}
 
             {/* Symptom Triage Action Button */}
             {currentUser && (
@@ -385,6 +406,12 @@ export default function App() {
       <SymptomAssistantModal
         isOpen={isSymptomModalOpen}
         onClose={() => setIsSymptomModalOpen(false)}
+      />
+
+      {/* Health Tracker Modal */}
+      <HealthTrackerModal
+        isOpen={isHealthModalOpen}
+        onClose={() => setIsHealthModalOpen(false)}
       />
     </div>
   )
