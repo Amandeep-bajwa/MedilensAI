@@ -150,7 +150,14 @@ export default function App() {
       description: 'System-wide integration suites, latency profiling, automated stress validation, and clinical QA assertions.',
       icon: CheckCircle2,
       color: 'from-violet-500 to-indigo-500',
-      tag: 'Phase 11 (Next)'
+      tag: 'Phase 11 (Completed)'
+    },
+    {
+      title: 'Docker Containerization & Production Deployment',
+      description: 'Multi-container Docker orchestration, production Uvicorn ASGI tuning, NGINX SSL reverse proxy, and monitoring readiness.',
+      icon: Server,
+      color: 'from-purple-500 to-pink-500',
+      tag: 'Phase 12 (Next)'
     }
   ]
 
@@ -168,7 +175,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400">
-                Phase 10
+                Phase 11
               </span>
             </div>
           </div>
