@@ -23,6 +23,8 @@ import { ReportUploadCard } from './components/reports/ReportUploadCard'
 import { ReportsList } from './components/reports/ReportsList'
 import { SymptomAssistantModal } from './components/symptoms/SymptomAssistantModal'
 import { HealthTrackerModal } from './components/health/HealthTrackerModal'
+import { NotificationBellDropdown } from './components/notifications/NotificationBellDropdown'
+import { DashboardView } from './components/dashboard/DashboardView'
 
 interface HealthStatus {
   status: string
@@ -44,7 +46,7 @@ export default function App() {
 
   // Reports state
   const [reportsRefresh, setReportsRefresh] = useState<number>(0)
-  const [activeTab, setActiveTab] = useState<'workspace' | 'architecture'>('workspace')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workspace' | 'architecture'>('dashboard')
 
   const checkBackendHealth = async () => {
     setLoadingHealth(true)
@@ -130,11 +132,18 @@ export default function App() {
       tag: 'Phase 8 (Completed)'
     },
     {
-      title: 'Analytics, Health Trends & Multilingual Expansion',
-      description: 'Longitudinal biomarker trajectory charts, localized patient translations, and exportable summaries.',
+      title: 'Clinical Dashboard & Notifications',
+      description: 'Executive health analytics, active regimen tracking, report status metrics, and automated reminders.',
       icon: Activity,
       color: 'from-emerald-500 to-cyan-500',
-      tag: 'Phase 9 (Next)'
+      tag: 'Phase 9 (Completed)'
+    },
+    {
+      title: 'Security Hardening, Rate Limiting & OWASP Compliance',
+      description: 'Multi-layer brute-force defense, slowapi rate limits, MIME magic validation, and audit trail verification.',
+      icon: Shield,
+      color: 'from-rose-500 to-amber-500',
+      tag: 'Phase 10 (Next)'
     }
   ]
 
@@ -152,7 +161,7 @@ export default function App() {
                 MediLens AI
               </span>
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 8
+                Phase 9
               </span>
             </div>
           </div>
@@ -161,6 +170,16 @@ export default function App() {
             {/* View Switcher if Authenticated */}
             {currentUser && (
               <div className="hidden md:flex rounded-lg bg-slate-950/80 p-1 border border-slate-800">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
+                    activeTab === 'dashboard'
+                      ? 'bg-cyan-600 text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Dashboard
+                </button>
                 <button
                   onClick={() => setActiveTab('workspace')}
                   className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
@@ -224,6 +243,22 @@ export default function App() {
                 <Stethoscope className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Symptom Triage</span>
               </button>
+            )}
+
+            {/* Notifications Bell Dropdown */}
+            {currentUser && (
+              <NotificationBellDropdown
+                onNotificationClick={(link) => {
+                  if (link?.startsWith('/appointments') || link?.startsWith('/medications')) {
+                    setIsHealthModalOpen(true)
+                  } else {
+                    setActiveTab('workspace')
+                  }
+                }}
+                onRemindersGenerated={() => {
+                  setReportsRefresh((prev) => prev + 1)
+                }}
+              />
             )}
 
             {/* Auth Button or User Badge */}
@@ -293,7 +328,14 @@ export default function App() {
         </div>
 
         {/* Dynamic Content based on User State and Active Tab */}
-        {currentUser && activeTab === 'workspace' ? (
+        {currentUser && activeTab === 'dashboard' ? (
+          <DashboardView
+            onNavigateToReports={() => setActiveTab('workspace')}
+            onOpenHealthTracker={() => setIsHealthModalOpen(true)}
+            onOpenSymptomTriage={() => setIsSymptomModalOpen(true)}
+            onOpenUpload={() => setActiveTab('workspace')}
+          />
+        ) : currentUser && activeTab === 'workspace' ? (
           <div className="space-y-8 animate-fade-in">
             {/* Report Upload Component */}
             <ReportUploadCard

@@ -15,6 +15,9 @@ from app.core.errors import (
 from app.api.router import api_router
 import app.models  # ensure models are loaded
 
+# Ensure database tables exist across test clients and runtime
+Base.metadata.create_all(bind=engine)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: ensure upload dir and database tables exist

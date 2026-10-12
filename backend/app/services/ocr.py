@@ -10,7 +10,7 @@ try:
 except ImportError:
     pytesseract = None
 
-from app.models.entities import Report, OCR, ReportChunk
+from app.models.entities import Report, OCR, ReportChunk, Notification
 from app.schemas.ocr import LabParameter
 from app.services.audit import record_audit_log
 
@@ -306,8 +306,17 @@ def process_report_ocr(
         db.add(chunk_obj)
         saved_chunks.append(chunk_obj)
 
-    # Step 6: Mark Report as Completed
+    # Step 6: Mark Report as Completed & Dispatch Notification (FR-NOT-001)
     report.processing_status = "Completed"
+    notif = Notification(
+        user_id=report.user_id,
+        title=f"Report Processed: {report.file_name}",
+        message=f"Analysis complete for '{report.file_name}'. Extracted {len(parameters)} biomarkers across {len(saved_chunks)} semantic chunks.",
+        type="REPORT_PROCESSED",
+        link=f"/reports/{report.report_id}",
+        is_read=False
+    )
+    db.add(notif)
     db.commit()
     db.refresh(ocr_record)
 

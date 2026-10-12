@@ -31,6 +31,7 @@ class User(Base):
     ai_interactions = relationship("AIInteraction", back_populates="user", cascade="all, delete-orphan")
     symptom_interactions = relationship("SymptomInteraction", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
 
 class Report(Base):
     __tablename__ = "reports"
@@ -148,3 +149,18 @@ class AuditLog(Base):
 
     # Relationship
     user = relationship("User", back_populates="audit_logs")
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    notification_id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(150), nullable=False)
+    message = Column(Text, nullable=False)
+    type = Column(String(50), default="INFO", nullable=False)  # REPORT_PROCESSED, MEDICATION_REMINDER, APPOINTMENT_REMINDER, SYSTEM
+    is_read = Column(Boolean, default=False, nullable=False)
+    link = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    # Relationship
+    user = relationship("User", back_populates="notifications")
