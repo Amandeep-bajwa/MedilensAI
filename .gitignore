@@ -25,12 +25,15 @@ build/
 .env
 .env.local
 .env.*.local
+.env.production
 !.env.example
+!.env.production.example
 
-# Local storage and file uploads
+# Local storage, backups, and file uploads
 uploads/
 backend/uploads/
 storage/
+backups/
 
 # Databases
 *.sqlite

@@ -1,0 +1,43 @@
+# Production Dockerfile for MediLens AI FastAPI Backend
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Set production environment flags
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ENVIRONMENT=production \
+    DEBUG=False
+
+# Install system dependencies (Tesseract OCR, Poppler, PostgreSQL runtime, healthcheck curl)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    tesseract-ocr \
+    poppler-utils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create non-root application user for container security hardening
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app/uploads && \
+    chown -R appuser:appuser /app
+
+# Copy application source code
+COPY . /app
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8000
+
+# Container healthcheck probe
+HEALTHCHECK --interval=20s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
+# Launch multi-worker Uvicorn ASGI server with reverse-proxy header support
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--proxy-headers", "--forwarded-allow-ips", "*"]
