@@ -1,16 +1,21 @@
+import os
+import shutil
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.core.errors import AppException
-from app.models.entities import User, Report, Medication, Appointment
+from app.models.entities import User, Report, Medication, Appointment, AuditLog
 from app.schemas.auth import UserSummary
 from app.schemas.user import (
     UserProfileResponse,
     UserProfileUpdateRequest,
-    UserStatusUpdateRequest
+    UserStatusUpdateRequest,
+    AuditLogItemResponse,
+    AuditLogListResponse
 )
 from app.api.deps import get_current_user, require_admin
 from app.services.audit import record_audit_log
@@ -158,3 +163,69 @@ def update_user_status(
     )
 
     return UserSummary.model_validate(target_user)
+
+@router.delete(
+    "/profile",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Permanently delete authenticated user account (Right to be Forgotten)"
+)
+def delete_own_account(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Permanently deletes the user's account and all associated health data (SEC-PRIV-004).
+    Cascades removal of medical reports, OCR extractions, AI interactions,
+    prescriptions, appointments, notifications, and files stored on disk.
+    """
+    user_id = current_user.user_id
+
+    # 1. Purge physical files directory
+    user_dir = os.path.join(settings.UPLOAD_DIR, user_id)
+    if os.path.exists(user_dir):
+        shutil.rmtree(user_dir, ignore_errors=True)
+
+    # 2. Record security event before entity removal
+    record_audit_log(
+        db=db,
+        event_type="ACCOUNT_DELETED",
+        result="Success",
+        user_id=user_id,
+        metadata_info={"email": current_user.email}
+    )
+
+    # 3. Delete database record (cascading foreign keys purge related entities)
+    db.delete(current_user)
+    db.commit()
+
+    return None
+
+@router.get(
+    "/audit-logs",
+    response_model=AuditLogListResponse,
+    summary="List security audit logs (Admin only)"
+)
+def get_audit_logs(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    event_type: Optional[str] = Query(None, description="Filter by event type"),
+    user_id: Optional[str] = Query(None, description="Filter by actor user id"),
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieves operational audit records for forensic security compliance (SEC-LOG-001..005).
+    Strictly restricted to system administrators.
+    """
+    query = db.query(AuditLog)
+    if event_type:
+        query = query.filter(AuditLog.event_type == event_type.strip())
+    if user_id:
+        query = query.filter(AuditLog.user_id == user_id.strip())
+
+    total = query.count()
+    records = query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit).all()
+
+    items = [AuditLogItemResponse.model_validate(r) for r in records]
+    return AuditLogListResponse(total=total, items=items)
+

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.errors import AppException
 from app.models.entities import User
@@ -81,7 +82,9 @@ def register(
     response_model=TokenResponse,
     summary="Authenticate user and obtain JWT token"
 )
+@limiter.limit(settings.RATE_LIMIT_LOGIN)
 def login(
+    request: Request,
     payload: UserLoginRequest,
     db: Session = Depends(get_db)
 ):

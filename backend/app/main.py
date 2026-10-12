@@ -13,6 +13,9 @@ from app.core.errors import (
     generic_exception_handler
 )
 from app.api.router import api_router
+from app.core.rate_limit import limiter, rate_limit_custom_handler
+from app.core.middleware import SecurityHeadersMiddleware
+from slowapi.errors import RateLimitExceeded
 import app.models  # ensure models are loaded
 
 # Ensure database tables exist across test clients and runtime
@@ -33,7 +36,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Middleware
+# Register slowapi rate limiter state
+app.state.limiter = limiter
+
+# Security Headers & CORS Middleware (SEC-INP, SEC-PRIV)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -43,6 +50,7 @@ app.add_middleware(
 )
 
 # Exception Handlers (SRS Section 16 compliant)
+app.add_exception_handler(RateLimitExceeded, rate_limit_custom_handler)
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)

@@ -140,10 +140,17 @@ export default function App() {
     },
     {
       title: 'Security Hardening, Rate Limiting & OWASP Compliance',
-      description: 'Multi-layer brute-force defense, slowapi rate limits, MIME magic validation, and audit trail verification.',
+      description: 'Multi-layer brute-force defense, slowapi rate limits, clinical PII scrubber, and GDPR right to be forgotten.',
       icon: Shield,
       color: 'from-rose-500 to-amber-500',
-      tag: 'Phase 10 (Next)'
+      tag: 'Phase 10 (Completed)'
+    },
+    {
+      title: 'End-to-End Testing & Clinical Performance Benchmarking',
+      description: 'System-wide integration suites, latency profiling, automated stress validation, and clinical QA assertions.',
+      icon: CheckCircle2,
+      color: 'from-violet-500 to-indigo-500',
+      tag: 'Phase 11 (Next)'
     }
   ]
 
@@ -160,8 +167,8 @@ export default function App() {
               <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">
                 MediLens AI
               </span>
-              <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-400">
-                Phase 9
+              <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400">
+                Phase 10
               </span>
             </div>
           </div>

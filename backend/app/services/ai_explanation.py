@@ -13,6 +13,7 @@ from app.schemas.ai import (
 )
 from app.services.ocr import process_report_ocr, parse_clinical_lab_parameters
 from app.services.audit import record_audit_log
+from app.core.pii_scrubber import scrub_pii
 
 MANDATORY_SAFETY_DISCLAIMER = (
     "MediLens AI is an educational clinical assistant designed to help patients understand medical terminology. "
@@ -165,12 +166,13 @@ def generate_report_explanation(
         ocr_record, _, _ = process_report_ocr(db, report, current_user_id)
 
     raw_text = ocr_record.extracted_text or ""
-    parameters = parse_clinical_lab_parameters(raw_text)
+    sanitized_text = scrub_pii(raw_text)
+    parameters = parse_clinical_lab_parameters(sanitized_text)
 
-    # Generate clinical explanation
+    # Generate clinical explanation with de-identified patient content
     explanation_data = generate_heuristic_explanation(
         report=report,
-        extracted_text=raw_text,
+        extracted_text=sanitized_text,
         parameters=parameters,
         focus_areas=focus_areas
     )

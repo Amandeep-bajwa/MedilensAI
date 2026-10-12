@@ -77,6 +77,11 @@ export const authService = {
     return res.data
   },
 
+  async deleteAccount(): Promise<void> {
+    await api.delete('/users/profile')
+    this.logout()
+  },
+
   logout(): void {
     localStorage.removeItem('medilens_token')
     localStorage.removeItem('medilens_user')

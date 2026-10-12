@@ -19,6 +19,7 @@ from app.schemas.rag import (
 from app.services.ocr import process_report_ocr
 from app.services.ai_explanation import MANDATORY_SAFETY_DISCLAIMER
 from app.services.audit import record_audit_log
+from app.core.pii_scrubber import scrub_pii
 
 logger = logging.getLogger(__name__)
 

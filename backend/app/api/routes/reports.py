@@ -1,12 +1,14 @@
 import uuid
 import os
 from typing import Optional
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, Request, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.core.database import get_db
+from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.core.errors import AppException
 from app.models.entities import User, Report
 from app.schemas.report import (
@@ -45,7 +47,9 @@ def serialize_report(report: Report) -> ReportResponse:
     status_code=status.HTTP_201_CREATED,
     summary="Upload and ingest a medical report"
 )
+@limiter.limit(settings.RATE_LIMIT_UPLOAD)
 async def upload_report(
+    request: Request,
     file: UploadFile = File(..., description="Medical lab report document (PDF, PNG, JPG, JPEG)"),
     category: str = Form("Other", description="Clinical test category (e.g., CBC, Lipid Profile)"),
     current_user: User = Depends(get_current_user),

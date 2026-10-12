@@ -1,9 +1,11 @@
 import json
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.core.errors import AppException
 from app.models.entities import User, Report, AIInteraction
 from app.schemas.ai import (
@@ -28,7 +30,9 @@ router = APIRouter(prefix="/reports", tags=["AI Report Explanation & Clinical In
     status_code=status.HTTP_200_OK,
     summary="Generate patient-friendly AI report explanation and doctor consultation prompts"
 )
+@limiter.limit(settings.RATE_LIMIT_AI)
 def explain_report(
+    request: Request,
     report_id: str,
     payload: Optional[ReportSummaryRequest] = None,
     current_user: User = Depends(get_current_user),
@@ -108,7 +112,9 @@ def get_report_explanation(
     status_code=status.HTTP_200_OK,
     summary="Ask a follow-up question grounded in this report's findings"
 )
+@limiter.limit(settings.RATE_LIMIT_AI)
 def ask_question_about_report(
+    request: Request,
     report_id: str,
     payload: AskReportQuestionRequest,
     current_user: User = Depends(get_current_user),

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, User, KeyRound, LogOut, Check, AlertCircle, FileText, Pill, Calendar, Loader2 } from 'lucide-react'
+import { X, User, KeyRound, LogOut, Check, AlertCircle, FileText, Pill, Calendar, Loader2, Trash2 } from 'lucide-react'
 import { authService, type UserSummary, type UserProfileResponse } from '../../services/auth'
 
 interface ProfileModalProps {
@@ -28,6 +28,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [newPassword, setNewPassword] = useState<string>('')
   const [passwordStatus, setPasswordStatus] = useState<{ success?: string; error?: string } | null>(null)
   const [changingPassword, setChangingPassword] = useState<boolean>(false)
+
+  // Account deletion states (GDPR)
+  const [confirmDelete, setConfirmDelete] = useState<boolean>(false)
+  const [deletingAccount, setDeletingAccount] = useState<boolean>(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -81,6 +86,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       setPasswordStatus({ error: msg })
     } finally {
       setChangingPassword(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true)
+    setDeleteError(null)
+    try {
+      await authService.deleteAccount()
+      onLogout()
+      onClose()
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.response?.data?.detail || 'Failed to delete account. Please try again.'
+      setDeleteError(msg)
+      setDeletingAccount(false)
     }
   }
 
@@ -231,13 +250,68 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </form>
         )}
 
+        {/* Danger Zone: GDPR Right to be Forgotten */}
+        <div className="mb-4 rounded-xl border border-rose-950/60 bg-rose-950/20 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-rose-400 flex items-center gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> GDPR Right to be Forgotten
+              </p>
+              <p className="text-[11px] text-slate-400">Permanently delete account and cascade purge all records.</p>
+            </div>
+            {!confirmDelete && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="px-2.5 py-1 text-xs font-medium rounded-lg border border-rose-800/80 text-rose-400 hover:bg-rose-900/40 transition"
+              >
+                Delete Account
+              </button>
+            )}
+          </div>
+
+          {confirmDelete && (
+            <div className="mt-3 pt-3 border-t border-rose-900/40 space-y-2">
+              <p className="text-[11px] text-rose-300 font-medium">
+                This will permanently delete your account, clinical reports, symptom logs, medications, appointments, and audit traces from disk and database.
+              </p>
+              {deleteError && (
+                <div className="text-[11px] text-rose-400 bg-rose-950/60 p-2 rounded border border-rose-800">
+                  {deleteError}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={deletingAccount}
+                  onClick={handleDeleteAccount}
+                  className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-500 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {deletingAccount ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Yes, Permanently Delete'}
+                </button>
+                <button
+                  type="button"
+                  disabled={deletingAccount}
+                  onClick={() => {
+                    setConfirmDelete(false)
+                    setDeleteError(null)
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Logout Button */}
         <button
           onClick={() => {
             onLogout()
             onClose()
           }}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-900/50 bg-rose-950/20 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 transition"
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition"
         >
           <LogOut className="h-4 w-4" /> Sign Out
         </button>
