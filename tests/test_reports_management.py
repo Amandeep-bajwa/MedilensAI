@@ -18,9 +18,11 @@ VALID_PDF_BYTES = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
 VALID_PNG_BYTES = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
 VALID_JPEG_BYTES = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C"
 
+import uuid
+
 @pytest.fixture
 def auth_user_a():
-    email = "usera@example.com"
+    email = f"usera_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "User Alpha",
         "email": email,
@@ -33,7 +35,7 @@ def auth_user_a():
 
 @pytest.fixture
 def auth_user_b():
-    email = "userb@example.com"
+    email = f"userb_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "User Beta",
         "email": email,
@@ -46,22 +48,26 @@ def auth_user_b():
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    def do_cleanup():
+        db = SessionLocal()
+        try:
+            reports = db.query(Report).all()
+            for r in reports:
+                if r.file_path and os.path.exists(r.file_path):
+                    try:
+                        os.remove(r.file_path)
+                    except OSError:
+                        pass
+            db.query(Report).delete()
+            db.query(AuditLog).delete()
+            db.query(User).filter(User.email.like("%user%@example.com")).delete(synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+
+    do_cleanup()
     yield
-    db = SessionLocal()
-    try:
-        reports = db.query(Report).all()
-        for r in reports:
-            if r.file_path and os.path.exists(r.file_path):
-                try:
-                    os.remove(r.file_path)
-                except OSError:
-                    pass
-        db.query(Report).delete()
-        db.query(AuditLog).delete()
-        db.query(User).filter(User.email.in_(["usera@example.com", "userb@example.com", "admin_rep@example.com"])).delete()
-        db.commit()
-    finally:
-        db.close()
+    do_cleanup()
 
 def test_upload_pdf_success(auth_user_a):
     files = {

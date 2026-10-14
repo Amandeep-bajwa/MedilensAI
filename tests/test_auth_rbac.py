@@ -15,18 +15,22 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def clean_test_users():
     """Ensure test users are cleaned up before and after tests."""
+    def do_clean():
+        db = SessionLocal()
+        try:
+            db.query(AuditLog).filter(
+                (AuditLog.user_id.in_(
+                    db.query(User.user_id).filter(User.email.like("%test%@example.com"))
+                ))
+            ).delete(synchronize_session=False)
+            db.query(User).filter(User.email.like("%test%@example.com")).delete(synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+
+    do_clean()
     yield
-    db = SessionLocal()
-    try:
-        db.query(AuditLog).filter(
-            (AuditLog.user_id.in_(
-                db.query(User.user_id).filter(User.email.like("%test%@example.com"))
-            ))
-        ).delete(synchronize_session=False)
-        db.query(User).filter(User.email.like("%test%@example.com")).delete(synchronize_session=False)
-        db.commit()
-    finally:
-        db.close()
+    do_clean()
 
 def test_user_registration_success():
     payload = {

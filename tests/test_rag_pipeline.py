@@ -33,9 +33,11 @@ SAMPLE_CLINICAL_TEXT = (
     "Total cholesterol is elevated. Patient advised to adopt dietary lifestyle changes."
 )
 
+import uuid
+
 @pytest.fixture
 def test_user_and_token():
-    email = f"rag_patient_{id(object())}@example.com"
+    email = f"rag_patient_{uuid.uuid4().hex}@example.com"
     password = "SecurePassword123!"
     reg_res = client.post("/api/auth/register", json={
         "name": "RAG Patient",
@@ -175,7 +177,7 @@ def test_rag_bola_isolation(uploaded_and_chunked_report):
     report_id, _ = uploaded_and_chunked_report
 
     # Register an attacker user
-    attacker_email = f"attacker_{id(object())}@example.com"
+    attacker_email = f"attacker_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "Attacker",
         "email": attacker_email,

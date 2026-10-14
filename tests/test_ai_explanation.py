@@ -60,9 +60,11 @@ startxref
 550
 %%EOF"""
 
+import uuid
+
 @pytest.fixture
 def auth_patient():
-    email = "ai_patient@example.com"
+    email = f"ai_patient_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "Alex Mercer",
         "email": email,
@@ -75,7 +77,7 @@ def auth_patient():
 
 @pytest.fixture
 def auth_intruder():
-    email = "ai_intruder@example.com"
+    email = f"ai_intruder_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "Intruder User",
         "email": email,
@@ -88,25 +90,29 @@ def auth_intruder():
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    def do_cleanup():
+        db = SessionLocal()
+        try:
+            reports = db.query(Report).all()
+            for r in reports:
+                if r.file_path and os.path.exists(r.file_path):
+                    try:
+                        os.remove(r.file_path)
+                    except OSError:
+                        pass
+            db.query(AIInteraction).delete()
+            db.query(ReportChunk).delete()
+            db.query(OCR).delete()
+            db.query(Report).delete()
+            db.query(AuditLog).delete()
+            db.query(User).filter(User.email.like("%ai_%@example.com")).delete(synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+
+    do_cleanup()
     yield
-    db = SessionLocal()
-    try:
-        reports = db.query(Report).all()
-        for r in reports:
-            if r.file_path and os.path.exists(r.file_path):
-                try:
-                    os.remove(r.file_path)
-                except OSError:
-                    pass
-        db.query(AIInteraction).delete()
-        db.query(ReportChunk).delete()
-        db.query(OCR).delete()
-        db.query(Report).delete()
-        db.query(AuditLog).delete()
-        db.query(User).filter(User.email.in_(["ai_patient@example.com", "ai_intruder@example.com"])).delete()
-        db.commit()
-    finally:
-        db.close()
+    do_cleanup()
 
 def test_generate_ai_explanation_success(auth_patient):
     # Step 1: Upload Report

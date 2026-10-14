@@ -64,9 +64,11 @@ startxref
 550
 %%EOF"""
 
+import uuid
+
 @pytest.fixture
 def auth_patient():
-    email = "ocr_patient@example.com"
+    email = f"ocr_patient_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "OCR Patient",
         "email": email,
@@ -79,7 +81,7 @@ def auth_patient():
 
 @pytest.fixture
 def auth_other_user():
-    email = "ocr_other@example.com"
+    email = f"ocr_other_{uuid.uuid4().hex}@example.com"
     client.post("/api/auth/register", json={
         "name": "Other User",
         "email": email,
@@ -92,24 +94,28 @@ def auth_other_user():
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    def do_cleanup():
+        db = SessionLocal()
+        try:
+            reports = db.query(Report).all()
+            for r in reports:
+                if r.file_path and os.path.exists(r.file_path):
+                    try:
+                        os.remove(r.file_path)
+                    except OSError:
+                        pass
+            db.query(ReportChunk).delete()
+            db.query(OCR).delete()
+            db.query(Report).delete()
+            db.query(AuditLog).delete()
+            db.query(User).filter(User.email.like("%ocr%@example.com")).delete(synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+
+    do_cleanup()
     yield
-    db = SessionLocal()
-    try:
-        reports = db.query(Report).all()
-        for r in reports:
-            if r.file_path and os.path.exists(r.file_path):
-                try:
-                    os.remove(r.file_path)
-                except OSError:
-                    pass
-        db.query(ReportChunk).delete()
-        db.query(OCR).delete()
-        db.query(Report).delete()
-        db.query(AuditLog).delete()
-        db.query(User).filter(User.email.in_(["ocr_patient@example.com", "ocr_other@example.com"])).delete()
-        db.commit()
-    finally:
-        db.close()
+    do_cleanup()
 
 def test_text_cleaning_unit():
     raw_dirty = "Clinical Report\r\nLine 1\xa0\xa0Value: 12\x00\x01\n\n\n\nLine 2   "
